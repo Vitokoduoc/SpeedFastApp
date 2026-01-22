@@ -6,41 +6,39 @@ import com.model.PedidoCompraXpress;
 import com.model.PedidoEncomienda;
 
 /**
- * Punto de entrada del sistema SpeedFast (Semana 1).
+ * Punto de entrada del sistema SpeedFast.
  * <p>
- * Demuestra:
+ * Esta clase ejecuta una simulación simple creando distintos tipos de pedidos y
+ * mostrando por consola:
+ * </p>
  * <ul>
- *   <li>Polimorfismo por sobrescritura: referencias {@link Pedido} ejecutan comportamiento de subclases.</li>
- *   <li>Sobrecarga: uso de {@code asignarRepartidor()} y {@code asignarRepartidor(String)}.</li>
+ *   <li>Resumen del pedido (datos base).</li>
+ *   <li>Tiempo estimado de entrega según el tipo de pedido.</li>
  * </ul>
+ *
+ * <p>
+ * El objetivo es validar el comportamiento del sistema a través de herencia y
+ * polimorfismo mediante la llamada a métodos definidos en la clase base.
+ * </p>
  */
 public class Main {
 
     public static void main(String[] args) {
 
-        PedidoComida comida = new PedidoComida(1, "Av. Central 123");
-        PedidoEncomienda encomienda = new PedidoEncomienda(2, "Calle Norte 456");
-        PedidoCompraXpress xpress = new PedidoCompraXpress(3, "Pasaje Sur 789");
+        PedidoComida comida = new PedidoComida(1, "Av. Central 123", 4);
+        PedidoEncomienda encomienda = new PedidoEncomienda(2, "Calle Norte 456", 6);
+        PedidoCompraXpress xpress = new PedidoCompraXpress(3, "Pasaje Sur 789", 7);
 
-        // Polimorfismo (sobrescritura)
+        // Polimorfismo: referencias de tipo Pedido ejecutan comportamiento concreto de cada subclase
         Pedido[] pedidos = { comida, encomienda, xpress };
 
-        System.out.println("=== Polimorfismo (Sobrescritura) ===\n");
+        System.out.println("=== Simulación de pedidos ===\n");
+
         for (Pedido p : pedidos) {
-            p.asignarRepartidor();
+            System.out.println("[" + p.getClass().getSimpleName() + "]");
+            p.mostrarResumen();
+            System.out.println("Tiempo estimado de entrega: " + p.calcularTiempoEntrega() + " minutos");
             System.out.println();
         }
-
-        // Sobrecarga (misma acción, distinta firma)
-        System.out.println("=== Sobrecarga (asignarRepartidor(String)) ===\n");
-
-        comida.asignarRepartidor("Juan Pérez");
-        System.out.println();
-
-        encomienda.asignarRepartidor("Camila Soto");
-        System.out.println();
-
-        xpress.asignarRepartidor("Luis Díaz");
-        System.out.println();
     }
 }

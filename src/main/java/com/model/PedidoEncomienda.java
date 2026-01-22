@@ -1,38 +1,36 @@
 package com.model;
 
 /**
- * Pedido de encomienda.
+ * Representa un pedido asociado a entrega de encomiendas.
  * <p>
- * Regla del caso: requiere validación de peso y embalaje.
+ * Este tipo de pedido considera procesos adicionales (por ejemplo, validación de embalaje)
+ * que se reflejan en una regla propia para estimar el tiempo de entrega.
+ * </p>
  */
 public class PedidoEncomienda extends Pedido {
 
     /**
      * Crea un pedido de encomienda.
      *
-     * @param idPedido         identificador (debe ser &gt; 0).
+     * @param idPedido         identificador del pedido (debe ser mayor que 0).
      * @param direccionEntrega dirección de entrega (no nula ni vacía).
+     * @param distanciaKm      distancia estimada del reparto en kilómetros.
      */
-    public PedidoEncomienda(int idPedido, String direccionEntrega) {
-        super(idPedido, direccionEntrega, TipoPedido.ENCOMIENDA);
-    }
-
-    @Override
-    public void asignarRepartidor() {
-        imprimirEncabezado("Pedido Encomienda");
-        System.out.println("→ Validando peso y embalaje... OK");
+    public PedidoEncomienda(int idPedido, String direccionEntrega, double distanciaKm) {
+        super(idPedido, direccionEntrega, distanciaKm, TipoPedido.ENCOMIENDA);
     }
 
     /**
-     * Sobrescritura de la versión con nombre para incluir validaciones del tipo encomienda.
+     * Calcula el tiempo estimado de entrega para un pedido de encomienda.
+     * <p>
+     * Regla aplicada: 20 minutos base + 1.5 minutos por cada kilómetro.
+     * El resultado se ajusta a entero para entregar un valor final en minutos.
+     * </p>
      *
-     * @param nombreRepartidor nombre del repartidor (no nulo ni vacío).
+     * @return tiempo estimado de entrega en minutos.
      */
     @Override
-    public void asignarRepartidor(String nombreRepartidor) {
-        validarNombre(nombreRepartidor);
-        asignarRepartidor(); // reutiliza lógica específica (peso/embalaje)
-        System.out.println("→ Pedido asignado a " + nombreRepartidor.trim());
+    public int calcularTiempoEntrega() {
+        return (int) (20 + (1.5 * getDistanciaKm()));
     }
 }
-

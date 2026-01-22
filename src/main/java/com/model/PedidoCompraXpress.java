@@ -3,35 +3,35 @@ package com.model;
 /**
  * Pedido de compra express.
  * <p>
- * Regla del caso: se asigna al repartidor más cercano con disponibilidad inmediata.
+ * Prioriza rapidez en la entrega mediante un tiempo base reducido,
+ * agregando un recargo fijo cuando la distancia supera un umbral definido.
+ * </p>
  */
 public class PedidoCompraXpress extends Pedido {
 
     /**
      * Crea un pedido de compra express.
      *
-     * @param idPedido         identificador (debe ser &gt; 0).
+     * @param idPedido         identificador del pedido (debe ser mayor que 0).
      * @param direccionEntrega dirección de entrega (no nula ni vacía).
+     * @param distanciaKm      distancia estimada del reparto en kilómetros (no negativa).
      */
-    public PedidoCompraXpress(int idPedido, String direccionEntrega) {
-        super(idPedido, direccionEntrega, TipoPedido.COMPRA_XPRESS);
-    }
-
-    @Override
-    public void asignarRepartidor() {
-        imprimirEncabezado("Pedido Compra Express");
-        System.out.println("→ Repartidor más cercano con disponibilidad inmediata encontrado.");
+    public PedidoCompraXpress(int idPedido, String direccionEntrega, double distanciaKm) {
+        super(idPedido, direccionEntrega, distanciaKm, TipoPedido.EXPRESS);
     }
 
     /**
-     * Sobrescritura de la versión con nombre para incluir validaciones del tipo compra express.
+     * Calcula el tiempo estimado de entrega.
+     * Regla aplicada: 10 minutos base. Si la distancia es mayor a 5 km, se agregan 5 minutos.
      *
-     * @param nombreRepartidor nombre del repartidor (no nulo ni vacío).
+     * @return tiempo estimado de entrega en minutos.
      */
     @Override
-    public void asignarRepartidor(String nombreRepartidor) {
-        validarNombre(nombreRepartidor);
-        asignarRepartidor(); // reutiliza lógica específica (cercanía/disponibilidad)
-        System.out.println("→ Pedido asignado a " + nombreRepartidor.trim());
+    public int calcularTiempoEntrega() {
+        int tiempo = 10;
+        if (getDistanciaKm() > 5) {
+            tiempo += 5;
+        }
+        return tiempo;
     }
 }

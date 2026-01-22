@@ -3,44 +3,58 @@ package com.model;
 import java.util.Objects;
 
 /**
- * Representa un pedido genérico de SpeedFast.
+ * Representa un pedido genérico dentro del sistema SpeedFast.
  * <p>
- * Superclase de pedidos especializados, diseñada para aplicar polimorfismo:
+ * Esta clase define la información común a todos los pedidos y establece un contrato
+ * para que cada tipo concreto implemente su propio cálculo de tiempo estimado.
+ * </p>
+ *
+ * <h2>Responsabilidades</h2>
  * <ul>
- *   <li><b>Sobrescritura</b>: las subclases personalizan {@link #asignarRepartidor()}.</li>
- *   <li><b>Sobrecarga</b>: el mismo comportamiento se ofrece con distintas firmas
- *       mediante {@link #asignarRepartidor()} y {@link #asignarRepartidor(String)}.</li>
+ *   <li>Centralizar los atributos base del pedido: id, dirección y distancia.</li>
+ *   <li>Entregar una salida estándar mediante {@link #mostrarResumen()}.</li>
+ *   <li>Forzar a las subclases a implementar {@link #calcularTiempoEntrega()}.</li>
  * </ul>
+ *
+ * <p>
+ * Punto de extensión: futuros comportamientos comunes relacionados con la gestión del pedido
+ * pueden incorporarse aquí manteniendo el diseño modular y reutilizable.
+ * </p>
  */
-public class Pedido {
+public abstract class Pedido {
 
     /**
-     * Tipos soportados por SpeedFast para evitar strings "mágicos".
+     * Tipos de pedido soportados por el sistema.
      */
     public enum TipoPedido {
         COMIDA,
         ENCOMIENDA,
-        COMPRA_XPRESS
+        EXPRESS
     }
 
     private final int idPedido;
     private final String direccionEntrega;
+    private final double distanciaKm;
     private final TipoPedido tipoPedido;
 
     /**
-     * Crea un pedido genérico.
+     * Construye un pedido validando los datos de entrada para asegurar un estado consistente.
      *
-     * @param idPedido         identificador del pedido (debe ser &gt; 0).
+     * @param idPedido         identificador único del pedido (debe ser mayor que 0).
      * @param direccionEntrega dirección de entrega (no nula ni vacía).
+     * @param distanciaKm      distancia estimada en kilómetros (no negativa).
      * @param tipoPedido       tipo de pedido (no nulo).
-     * @throws IllegalArgumentException si algún argumento no cumple lo requerido.
+     * @throws IllegalArgumentException si alguno de los parámetros no es válido.
      */
-    public Pedido(int idPedido, String direccionEntrega, TipoPedido tipoPedido) {
+    public Pedido(int idPedido, String direccionEntrega, double distanciaKm, TipoPedido tipoPedido) {
         if (idPedido <= 0) {
             throw new IllegalArgumentException("idPedido debe ser mayor que 0.");
         }
         if (direccionEntrega == null || direccionEntrega.trim().isEmpty()) {
             throw new IllegalArgumentException("direccionEntrega no puede ser nula o vacía.");
+        }
+        if (distanciaKm < 0) {
+            throw new IllegalArgumentException("distanciaKm no puede ser negativa.");
         }
         if (tipoPedido == null) {
             throw new IllegalArgumentException("tipoPedido no puede ser nulo.");
@@ -48,52 +62,45 @@ public class Pedido {
 
         this.idPedido = idPedido;
         this.direccionEntrega = direccionEntrega.trim();
+        this.distanciaKm = distanciaKm;
         this.tipoPedido = tipoPedido;
     }
 
     /**
-     * Asigna un repartidor al pedido (comportamiento genérico).
+     * Imprime un resumen básico del pedido por consola.
      * <p>
-     * Las subclases sobrescriben este método para personalizar la lógica
-     * según el tipo de pedido.
+     * Mantiene un formato consistente para facilitar lectura y comparación entre pedidos.
+     * </p>
      */
-    public void asignarRepartidor() {
-        System.out.println("Asignando repartidor al pedido...");
+    public void mostrarResumen() {
+        System.out.println("Pedido #" + String.format("%03d", idPedido));
+        System.out.println("Dirección: " + direccionEntrega);
+        System.out.println("Distancia: " + formatearKm(distanciaKm) + " km");
     }
 
     /**
-     * Sobrecarga: asigna un repartidor indicando su nombre (comportamiento genérico).
+     * Calcula el tiempo estimado de entrega en minutos.
      * <p>
-     * Las subclases pueden sobrescribir este método para aplicar validaciones
-     * propias del tipo de pedido.
+     * La lógica es específica del tipo de pedido y debe ser implementada por las subclases.
+     * </p>
      *
-     * @param nombreRepartidor nombre del repartidor (no nulo ni vacío).
-     * @throws IllegalArgumentException si el nombre es nulo o vacío.
+     * @return tiempo estimado de entrega en minutos.
      */
-    public void asignarRepartidor(String nombreRepartidor) {
-        validarNombre(nombreRepartidor);
-        asignarRepartidor();
-        System.out.println("→ Pedido asignado a " + nombreRepartidor.trim());
-    }
+    public abstract int calcularTiempoEntrega();
 
-    /**
-     * Imprime un encabezado estándar por consola para mantener salida consistente.
-     *
-     * @param titulo etiqueta del tipo de pedido, por ejemplo: {@code "Pedido Comida"}.
-     */
-    protected void imprimirEncabezado(String titulo) {
-        System.out.println("[" + titulo + "]");
-        System.out.println("Asignando repartidor...");
-    }
-
-    /** @return ID del pedido. */
+    /** @return identificador del pedido. */
     public int getIdPedido() {
         return idPedido;
     }
 
-    /** @return dirección de entrega. */
+    /** @return dirección de entrega del pedido. */
     public String getDireccionEntrega() {
         return direccionEntrega;
+    }
+
+    /** @return distancia estimada en kilómetros. */
+    public double getDistanciaKm() {
+        return distanciaKm;
     }
 
     /** @return tipo de pedido. */
@@ -102,15 +109,15 @@ public class Pedido {
     }
 
     /**
-     * Valida el nombre del repartidor.
+     * Formatea la distancia para una salida más limpia.
+     * Si la distancia es un entero exacto, se imprime sin decimales.
      *
-     * @param nombreRepartidor nombre del repartidor.
-     * @throws IllegalArgumentException si el nombre es nulo o vacío.
+     * @param km distancia en kilómetros.
+     * @return representación textual de la distancia.
      */
-    protected void validarNombre(String nombreRepartidor) {
-        if (nombreRepartidor == null || nombreRepartidor.trim().isEmpty()) {
-            throw new IllegalArgumentException("nombreRepartidor no puede ser nulo o vacío.");
-        }
+    protected String formatearKm(double km) {
+        if (km == (int) km) return String.valueOf((int) km);
+        return String.valueOf(km);
     }
 
     @Override
@@ -118,6 +125,7 @@ public class Pedido {
         return "Pedido{" +
                 "idPedido=" + idPedido +
                 ", direccionEntrega='" + direccionEntrega + '\'' +
+                ", distanciaKm=" + distanciaKm +
                 ", tipoPedido=" + tipoPedido +
                 '}';
     }

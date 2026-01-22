@@ -1,37 +1,37 @@
 package com.model;
 
 /**
- * Pedido de comida.
+ * Representa un pedido asociado a entrega de comida.
  * <p>
- * Regla del caso: requiere repartidor con mochila térmica.
+ * Este tipo de pedido considera una preparación previa y condiciones especiales
+ * de transporte, lo que se refleja en su regla específica de cálculo de tiempo
+ * estimado de entrega.
+ * </p>
  */
 public class PedidoComida extends Pedido {
 
     /**
      * Crea un pedido de comida.
      *
-     * @param idPedido         identificador (debe ser &gt; 0).
+     * @param idPedido         identificador del pedido (debe ser mayor que 0).
      * @param direccionEntrega dirección de entrega (no nula ni vacía).
+     * @param distanciaKm      distancia estimada del reparto en kilómetros.
      */
-    public PedidoComida(int idPedido, String direccionEntrega) {
-        super(idPedido, direccionEntrega, TipoPedido.COMIDA);
-    }
-
-    @Override
-    public void asignarRepartidor() {
-        imprimirEncabezado("Pedido Comida");
-        System.out.println("→ Verificando mochila térmica... OK");
+    public PedidoComida(int idPedido, String direccionEntrega, double distanciaKm) {
+        super(idPedido, direccionEntrega, distanciaKm, TipoPedido.COMIDA);
     }
 
     /**
-     * Sobrescritura de la versión con nombre para incluir validaciones del tipo comida.
+     * Calcula el tiempo estimado de entrega para un pedido de comida.
+     * <p>
+     * Regla aplicada: 15 minutos base por preparación del pedido
+     * más 2 minutos adicionales por cada kilómetro de distancia.
+     * </p>
      *
-     * @param nombreRepartidor nombre del repartidor (no nulo ni vacío).
+     * @return tiempo estimado de entrega en minutos.
      */
     @Override
-    public void asignarRepartidor(String nombreRepartidor) {
-        validarNombre(nombreRepartidor);
-        asignarRepartidor(); // reutiliza lógica específica (mochila térmica)
-        System.out.println("→ Pedido asignado a " + nombreRepartidor.trim());
+    public int calcularTiempoEntrega() {
+        return 15 + (int) (2 * getDistanciaKm());
     }
 }
