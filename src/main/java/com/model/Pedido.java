@@ -1,19 +1,24 @@
 package com.model;
 
+import com.interfaces.Cancelable;
+import com.interfaces.Despachable;
+
 import java.util.Objects;
 
 /**
  * Representa un pedido genérico dentro del sistema SpeedFast.
  * <p>
  * Esta clase define la información común a todos los pedidos y establece un contrato
- * para que cada tipo concreto implemente su propio cálculo de tiempo estimado.
+ * para que cada tipo concreto implemente su propio cálculo de tiempo estimado
+ * y su forma de asignación de repartidor.
  * </p>
  *
  * <h2>Responsabilidades</h2>
  * <ul>
- *   <li>Centralizar los atributos base del pedido: id, dirección y distancia.</li>
+ *   <li>Centralizar los atributos base del pedido: id, dirección, distancia y tipo.</li>
  *   <li>Entregar una salida estándar mediante {@link #mostrarResumen()}.</li>
  *   <li>Forzar a las subclases a implementar {@link #calcularTiempoEntrega()}.</li>
+ *   <li>Permitir asignación de repartidor automática (polimorfismo) y manual (sobrecarga).</li>
  * </ul>
  *
  * <p>
@@ -21,7 +26,7 @@ import java.util.Objects;
  * pueden incorporarse aquí manteniendo el diseño modular y reutilizable.
  * </p>
  */
-public abstract class Pedido {
+public abstract class Pedido implements Despachable, Cancelable {
 
     /**
      * Tipos de pedido soportados por el sistema.
@@ -36,6 +41,12 @@ public abstract class Pedido {
     private final String direccionEntrega;
     private final double distanciaKm;
     private final TipoPedido tipoPedido;
+
+    /** Nombre del repartidor asignado. Puede ser null si aún no se asigna. */
+    private String repartidor;
+
+    /** Indica si el pedido fue cancelado. */
+    private boolean cancelado;
 
     /**
      * Construye un pedido validando los datos de entrada para asegurar un estado consistente.
@@ -64,18 +75,46 @@ public abstract class Pedido {
         this.direccionEntrega = direccionEntrega.trim();
         this.distanciaKm = distanciaKm;
         this.tipoPedido = tipoPedido;
+
+        this.repartidor = null;
+        this.cancelado = false;
     }
 
     /**
      * Imprime un resumen básico del pedido por consola.
      * <p>
      * Mantiene un formato consistente para facilitar lectura y comparación entre pedidos.
+     * Incluye repartidor y tiempo estimado para apoyar la simulación en Main.
      * </p>
      */
     public void mostrarResumen() {
         System.out.println("Pedido #" + String.format("%03d", idPedido));
         System.out.println("Dirección: " + direccionEntrega);
         System.out.println("Distancia: " + formatearKm(distanciaKm) + " km");
+        System.out.println("Repartidor asignado: " + (repartidor == null ? "Sin asignar" : repartidor));
+        System.out.println("Tiempo estimado: " + calcularTiempoEntrega() + " minutos");
+    }
+
+    /**
+     * Asigna un repartidor automáticamente.
+     * <p>
+     * Este método debe ser sobrescrito por las subclases para aplicar la regla de negocio
+     * correspondiente al tipo de pedido.
+     * </p>
+     */
+    public abstract void asignarRepartidor();
+
+    /**
+     * Asigna un repartidor manualmente (sobrecarga).
+     *
+     * @param nombre nombre del repartidor (no nulo ni vacío).
+     * @throws IllegalArgumentException si el nombre es nulo o vacío.
+     */
+    public void asignarRepartidor(String nombre) {
+        if (nombre == null || nombre.trim().isEmpty()) {
+            throw new IllegalArgumentException("El nombre del repartidor no puede ser nulo o vacío.");
+        }
+        this.repartidor = nombre.trim();
     }
 
     /**
@@ -87,6 +126,37 @@ public abstract class Pedido {
      * @return tiempo estimado de entrega en minutos.
      */
     public abstract int calcularTiempoEntrega();
+
+    /**
+     * Despacha el pedido si cumple las condiciones mínimas del flujo.
+     * <p>
+     * Valida que el pedido no esté cancelado y que tenga un repartidor asignado.
+     * </p>
+     */
+    @Override
+    public void despachar() {
+        if (cancelado) {
+            System.out.println("No se puede despachar: el pedido #" + String.format("%03d", idPedido) + " está cancelado.");
+            return;
+        }
+        if (repartidor == null) {
+            System.out.println("No se puede despachar: no hay repartidor asignado al pedido #" + String.format("%03d", idPedido) + ".");
+            return;
+        }
+        System.out.println("Pedido despachado correctamente.");
+    }
+
+    /**
+     * Cancela el pedido cambiando su estado.
+     * <p>
+     * Este método forma parte del contrato {@link Cancelable}.
+     * </p>
+     */
+    @Override
+    public void cancelar() {
+        this.cancelado = true;
+        System.out.println("→ Pedido cancelado exitosamente.");
+    }
 
     /** @return identificador del pedido. */
     public int getIdPedido() {
@@ -108,6 +178,29 @@ public abstract class Pedido {
         return tipoPedido;
     }
 
+    /** @return repartidor asignado o null si no existe asignación. */
+    public String getRepartidor() {
+        return repartidor;
+    }
+
+    /** @return true si el pedido fue cancelado. */
+    public boolean isCancelado() {
+        return cancelado;
+    }
+
+    /**
+     * Permite que las subclases asignen repartidor automático de forma controlada.
+     *
+     * @param repartidor nombre del repartidor (no nulo ni vacío).
+     * @throws IllegalArgumentException si el nombre es nulo o vacío.
+     */
+    protected void setRepartidor(String repartidor) {
+        if (repartidor == null || repartidor.trim().isEmpty()) {
+            throw new IllegalArgumentException("El nombre del repartidor no puede ser nulo o vacío.");
+        }
+        this.repartidor = repartidor.trim();
+    }
+
     /**
      * Formatea la distancia para una salida más limpia.
      * Si la distancia es un entero exacto, se imprime sin decimales.
@@ -127,6 +220,8 @@ public abstract class Pedido {
                 ", direccionEntrega='" + direccionEntrega + '\'' +
                 ", distanciaKm=" + distanciaKm +
                 ", tipoPedido=" + tipoPedido +
+                ", repartidor='" + repartidor + '\'' +
+                ", cancelado=" + cancelado +
                 '}';
     }
 

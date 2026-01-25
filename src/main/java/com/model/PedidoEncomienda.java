@@ -4,7 +4,8 @@ package com.model;
  * Representa un pedido asociado a entrega de encomiendas.
  * <p>
  * Este tipo de pedido considera procesos adicionales (por ejemplo, validación de embalaje)
- * que se reflejan en una regla propia para estimar el tiempo de entrega.
+ * que se reflejan en una regla propia para estimar el tiempo de entrega y en su
+ * asignación automática de repartidor.
  * </p>
  */
 public class PedidoEncomienda extends Pedido {
@@ -14,10 +15,25 @@ public class PedidoEncomienda extends Pedido {
      *
      * @param idPedido         identificador del pedido (debe ser mayor que 0).
      * @param direccionEntrega dirección de entrega (no nula ni vacía).
-     * @param distanciaKm      distancia estimada del reparto en kilómetros.
+     * @param distanciaKm      distancia estimada del reparto en kilómetros (no negativa).
+     * @throws IllegalArgumentException si algún parámetro no cumple validación.
      */
     public PedidoEncomienda(int idPedido, String direccionEntrega, double distanciaKm) {
         super(idPedido, direccionEntrega, distanciaKm, TipoPedido.ENCOMIENDA);
+    }
+
+    /**
+     * Asigna un repartidor automáticamente para pedidos de encomienda.
+     * <p>
+     * Regla sugerida: las encomiendas se asignan a un repartidor especializado
+     * (por ejemplo, "Courier"). La validación del nombre se centraliza en
+     * {@link #setRepartidor(String)}.
+     * </p>
+     */
+    @Override
+    public void asignarRepartidor() {
+        // Regla de negocio (simple, clara y distinta a comida/express)
+        setRepartidor("Daniela Tapia");
     }
 
     /**

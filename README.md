@@ -1,23 +1,22 @@
-<p>
+<p align="center">
   <img src="https://www.duoc.cl/wp-content/uploads/2022/09/logo-0.png" width="300"/>
 </p>
 
 ---
-# SpeedFast – Abstracción y Herencia en Java
 
-Proyecto académico desarrollado para la asignatura **Desarrollo Orientado a Objetos II**, cuyo objetivo es diseñar e implementar una estructura **robusta, reutilizable y coherente**, aplicando los principios de **abstracción**, **herencia** y **polimorfismo** en Java, utilizando un caso contextualizado.
+# SpeedFast – Diseño Orientado a Objetos en Java – Nota Sumativa
 
 ---
 
 ## 📌 Contexto del problema
 
-**SpeedFast** es una empresa de reparto a domicilio que gestiona distintos tipos de pedidos, cada uno con reglas propias para estimar su tiempo de entrega:
+**SpeedFast** es una empresa de reparto a domicilio que gestiona distintos tipos de pedidos, cada uno con reglas propias para su asignación y estimación de tiempo de entrega:
 
-- **Comida**: considera tiempos asociados a preparación y traslado.
-- **Encomienda**: incorpora tiempos adicionales por validación y manipulación.
-- **Compra Express**: prioriza rapidez, con tiempos base reducidos.
+- **Pedido de Comida**: considera tiempos asociados a preparación y traslado.
+- **Pedido de Encomienda**: incorpora tiempos adicionales por validación y manipulación.
+- **Pedido Express**: prioriza rapidez, con tiempos base reducidos.
 
-Estas diferencias se modelan mediante **Programación Orientada a Objetos**, evitando estructuras rígidas y favoreciendo un diseño extensible.
+Además, el sistema debe permitir **despachar**, **cancelar** pedidos y **mantener un historial** de entregas realizadas.
 
 ---
 
@@ -25,9 +24,10 @@ Estas diferencias se modelan mediante **Programación Orientada a Objetos**, evi
 
 - Diseñar una **clase abstracta** que represente el concepto general de pedido.
 - Reutilizar atributos y comportamientos comunes mediante **herencia**.
-- Aplicar **polimorfismo por sobrescritura** para especializar el cálculo del tiempo de entrega.
-- Garantizar un diseño **claro, modular y alineado a buenas prácticas**.
-- Facilitar la futura extensión del sistema sin modificar la estructura base.
+- Aplicar **polimorfismo** mediante sobrescritura y sobrecarga de métodos.
+- Implementar **interfaces** para desacoplar responsabilidades del sistema.
+- Diseñar una estructura **modular, clara y alineada a buenas prácticas**.
+- Simular el flujo completo del sistema desde una clase `Main`.
 
 ---
 
@@ -36,11 +36,13 @@ Estas diferencias se modelan mediante **Programación Orientada a Objetos**, evi
 - Programación Orientada a Objetos (POO)
 - Abstracción (`abstract`)
 - Herencia (`extends`)
-- Polimorfismo (sobrescritura de métodos)
+- Polimorfismo (sobrescritura y sobrecarga)
+- Interfaces (`interface`)
 - Encapsulamiento
-- Validaciones de entrada
-- Uso de `enum` para evitar valores mágicos
-- Documentación JavaDoc
+- Validaciones de atributos
+- Uso de `enum`
+- Colecciones (`ArrayList`)
+- Documentación **JavaDoc**
 
 ---
 
@@ -53,31 +55,82 @@ src
         └── com
             ├── app
             │   └── Main.java
-            └── model
-                ├── Pedido.java
-                ├── PedidoComida.java
-                ├── PedidoEncomienda.java
-                └── PedidoCompraXpress.java
+            ├── model
+            │   ├── Pedido.java
+            │   ├── PedidoComida.java
+            │   ├── PedidoEncomienda.java
+            │   └── PedidoExpress.java
+            ├── interfaces
+            │   ├── Despachable.java
+            │   ├── Cancelable.java
+            │   └── Rastreable.java
+            └── controlador
+                └── ControladorDeEnvios.java
 ```
 
 ---
 
-## 🏗️ Diseño general
+## 🏗️ Diseño general del sistema
 
-- **Pedido (clase abstracta)**  
-  Define los atributos comunes (`idPedido`, `direccionEntrega`, `distanciaKm`) y provee:
-    - Un método implementado para mostrar el resumen del pedido.
-    - Un método abstracto `calcularTiempoEntrega()` que debe ser definido por cada subclase.
+### 🔹 Clase abstracta `Pedido`
+Representa el concepto base de pedido y define:
 
-- **PedidoComida / PedidoEncomienda / PedidoCompraXpress**  
-  Clases concretas que heredan de `Pedido` y **sobrescriben** el método
-  `calcularTiempoEntrega()` aplicando reglas específicas según el tipo de pedido.
+**Atributos comunes**
+- `idPedido`
+- `direccionEntrega`
+- `distanciaKm`
+- `tipoPedido`
+- `repartidor`
+- `cancelado`
 
-- **Main**  
-  Clase de ejecución que:
-    - Instancia distintos tipos de pedidos.
-    - Utiliza referencias del tipo base (`Pedido`).
-    - Demuestra el comportamiento polimórfico al ejecutar métodos comunes.
+**Comportamientos**
+- `mostrarResumen()` → método implementado.
+- `calcularTiempoEntrega()` → método abstracto.
+- `asignarRepartidor()` → método abstracto (asignación automática).
+- `asignarRepartidor(String nombre)` → método sobrecargado (asignación manual).
+
+Implementa las interfaces:
+- `Despachable`
+- `Cancelable`
+
+---
+
+### 🔹 Subclases concretas
+- `PedidoComida`
+- `PedidoEncomienda`
+- `PedidoExpress`
+
+Cada subclase:
+- Sobrescribe `calcularTiempoEntrega()` con reglas propias.
+- Sobrescribe `asignarRepartidor()` según el tipo de pedido.
+
+---
+
+### 🔹 Interfaces
+- **Despachable**: define la operación de despacho.
+- **Cancelable**: define la cancelación de un pedido.
+- **Rastreable**: define la visualización del historial.
+
+Estas interfaces permiten desacoplar responsabilidades y mejorar la mantenibilidad del sistema.
+
+---
+
+### 🔹 ControladorDeEnvios
+Clase responsable de:
+- Registrar pedidos en un historial (`ArrayList<Pedido>`).
+- Mostrar el historial por consola.
+- Implementar la interfaz `Rastreable`.
+
+---
+
+### 🔹 Clase `Main`
+Clase de ejecución que simula el funcionamiento completo del sistema:
+
+- Creación de distintos tipos de pedidos.
+- Asignación automática y manual de repartidores.
+- Cálculo del tiempo estimado.
+- Despacho y cancelación de pedidos.
+- Visualización del historial de entregas.
 
 ---
 
@@ -96,23 +149,20 @@ com.app.Main
 ## 🖥️ Ejemplo de salida por consola
 
 ```
-[PedidoComida]
-Pedido #001
-Dirección: Av. Central 123
-Distancia: 4 km
-Tiempo estimado de entrega: 23 minutos
-
 [PedidoEncomienda]
-Pedido #002
-Dirección: Calle Norte 456
-Distancia: 6 km
-Tiempo estimado de entrega: 29 minutos
-
-[PedidoCompraXpress]
-Pedido #003
-Dirección: Pasaje Sur 789
+Pedido #102
+Dirección: Av. Santa Rosa 567
 Distancia: 7 km
-Tiempo estimado de entrega: 15 minutos
+Repartidor asignado: Daniela Tapia
+Tiempo estimado: 30 minutos
+Pedido despachado correctamente.
+
+Cancelando Pedido Express #103...
+→ Pedido cancelado exitosamente.
+
+Historial:
+- PedidoComida #101 – entregado por Luis Díaz
+- PedidoEncomienda #102 – entregado por Daniela Tapia
 ```
 
 ---
@@ -123,22 +173,24 @@ Tiempo estimado de entrega: 15 minutos
                  ┌───────────────────────────────┐
                  │       Pedido (abstract)       │
                  ├───────────────────────────────┤
-                 │ - idPedido: int               │
-                 │ - direccionEntrega: String    │
-                 │ - distanciaKm: double         │
-                 │ - tipoPedido: TipoPedido      │
+                 │ - idPedido                    │
+                 │ - direccionEntrega            │
+                 │ - distanciaKm                 │
+                 │ - tipoPedido                  │
+                 │ - repartidor                  │
+                 │ - cancelado                   │
                  ├───────────────────────────────┤
-                 │ + mostrarResumen(): void      │
-                 │ + calcularTiempoEntrega():int │
+                 │ + mostrarResumen()             │
+                 │ + asignarRepartidor()          │
+                 │ + asignarRepartidor(String)    │
+                 │ + calcularTiempoEntrega()      │
                  └───────────────▲───────────────┘
                                  │
-          ┌──────────────────────┼────────────────────────┐
-          │                      │                        │
-┌────────────────────┐ ┌──────────────────────┐ ┌────────────────────────┐
-│   PedidoComida     │ │  PedidoEncomienda    │ │  PedidoCompraXpress    │
-├────────────────────┤ ├──────────────────────┤ ├────────────────────────┤
-│ + calcularTiempo() │ │ + calcularTiempo()   │ │ + calcularTiempo()     │
-└────────────────────┘ └──────────────────────┘ └────────────────────────┘
+        ┌────────────────────────┼────────────────────────┐
+        │                        │                        │
+┌────────────────────┐ ┌──────────────────────┐ ┌──────────────────────┐
+│   PedidoComida     │ │  PedidoEncomienda    │ │   PedidoExpress      │
+└────────────────────┘ └──────────────────────┘ └──────────────────────┘
 ```
 
 ---
@@ -147,4 +199,4 @@ Tiempo estimado de entrega: 15 minutos
 
 **Víctor Valenzuela**  
 Escuela de Informática y Telecomunicaciones  
-Duoc UC
+**Duoc UC**

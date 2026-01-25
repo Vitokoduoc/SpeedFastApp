@@ -5,7 +5,7 @@ package com.model;
  * <p>
  * Este tipo de pedido considera una preparación previa y condiciones especiales
  * de transporte, lo que se refleja en su regla específica de cálculo de tiempo
- * estimado de entrega.
+ * estimado de entrega y en su asignación automática de repartidor.
  * </p>
  */
 public class PedidoComida extends Pedido {
@@ -15,10 +15,24 @@ public class PedidoComida extends Pedido {
      *
      * @param idPedido         identificador del pedido (debe ser mayor que 0).
      * @param direccionEntrega dirección de entrega (no nula ni vacía).
-     * @param distanciaKm      distancia estimada del reparto en kilómetros.
+     * @param distanciaKm      distancia estimada del reparto en kilómetros (no negativa).
+     * @throws IllegalArgumentException si algún parámetro no cumple validación.
      */
     public PedidoComida(int idPedido, String direccionEntrega, double distanciaKm) {
         super(idPedido, direccionEntrega, distanciaKm, TipoPedido.COMIDA);
+    }
+
+    /**
+     * Asigna un repartidor automáticamente para pedidos de comida.
+     * <p>
+     * Regla sugerida: los pedidos de comida se asignan a repartidores del tipo "Food".
+     * La validación del nombre del repartidor se centraliza en {@link #setRepartidor(String)}.
+     * </p>
+     */
+    @Override
+    public void asignarRepartidor() {
+        // Regla de negocio (simple, clara y diferenciada por tipo)
+        setRepartidor("Luis Díaz");
     }
 
     /**

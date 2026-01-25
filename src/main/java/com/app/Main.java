@@ -1,44 +1,67 @@
 package com.app;
 
+import com.controlador.ControladorDeEnvios;
 import com.model.Pedido;
 import com.model.PedidoComida;
-import com.model.PedidoCompraXpress;
 import com.model.PedidoEncomienda;
+import com.model.PedidoCompraXpress;
 
 /**
  * Punto de entrada del sistema SpeedFast.
  * <p>
- * Esta clase ejecuta una simulación simple creando distintos tipos de pedidos y
- * mostrando por consola:
+ * Esta clase ejecuta una simulación completa del sistema de entregas,
+ * validando el uso de herencia, polimorfismo, abstracción e interfaces.
  * </p>
- * <ul>
- *   <li>Resumen del pedido (datos base).</li>
- *   <li>Tiempo estimado de entrega según el tipo de pedido.</li>
- * </ul>
  *
- * <p>
- * El objetivo es validar el comportamiento del sistema a través de herencia y
- * polimorfismo mediante la llamada a métodos definidos en la clase base.
- * </p>
+ * <h2>Simulación</h2>
+ * <ul>
+ *   <li>Creación de distintos tipos de pedidos.</li>
+ *   <li>Asignación automática y manual de repartidores.</li>
+ *   <li>Cálculo de tiempo estimado.</li>
+ *   <li>Despacho y cancelación de pedidos.</li>
+ *   <li>Visualización del historial de envíos.</li>
+ * </ul>
  */
 public class Main {
 
     public static void main(String[] args) {
 
-        PedidoComida comida = new PedidoComida(1, "Av. Central 123", 4);
-        PedidoEncomienda encomienda = new PedidoEncomienda(2, "Calle Norte 456", 6);
-        PedidoCompraXpress xpress = new PedidoCompraXpress(3, "Pasaje Sur 789", 7);
+        // Controlador de historial
+        ControladorDeEnvios controlador = new ControladorDeEnvios();
 
-        // Polimorfismo: referencias de tipo Pedido ejecutan comportamiento concreto de cada subclase
-        Pedido[] pedidos = { comida, encomienda, xpress };
+        // Creación de pedidos
+        PedidoComida comida = new PedidoComida(101, "Av. Central 123", 4);
+        PedidoEncomienda encomienda = new PedidoEncomienda(102, "Calle Norte 456", 6);
+        PedidoCompraXpress express = new PedidoCompraXpress(103, "Pasaje Sur 789", 7);
 
-        System.out.println("=== Simulación de pedidos ===\n");
+        // Polimorfismo: referencias de tipo Pedido
+        Pedido[] pedidos = { comida, encomienda, express };
 
+        System.out.println("=== Simulación de pedidos SpeedFast ===\n");
+
+        // Asignación automática + despacho
         for (Pedido p : pedidos) {
             System.out.println("[" + p.getClass().getSimpleName() + "]");
+            p.asignarRepartidor();              // sobrescritura
             p.mostrarResumen();
-            System.out.println("Tiempo estimado de entrega: " + p.calcularTiempoEntrega() + " minutos");
+            p.despachar();
+            controlador.registrarEntrega(p);
             System.out.println();
         }
+
+        // Asignación manual (sobrecarga)
+        System.out.println("=== Asignación manual de repartidor ===\n");
+        comida.asignarRepartidor("Pedro Morales");
+        comida.mostrarResumen();
+        System.out.println();
+
+        // Cancelación de pedido
+        System.out.println("Cancelando Pedido Express #103...");
+        express.cancelar();
+        express.despachar(); // prueba de validación
+        System.out.println();
+
+        // Visualización de historial
+        controlador.verHistorial();
     }
 }
