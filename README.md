@@ -3,8 +3,7 @@
 </p>
 
 ---
-
-# SpeedFast – Diseño Orientado a Objetos en Java – Nota Sumativa
+# SpeedFast – Sistema de Gestión de Entregas (OOP, Concurrencia, GUI & JDBC)
 
 ---
 
@@ -16,37 +15,35 @@
 - **Pedido de Encomienda**: incorpora tiempos adicionales por validación y manipulación.
 - **Pedido Express**: prioriza rapidez, con tiempos base reducidos.
 
-Además, el sistema debe permitir **despachar**, **cancelar** pedidos y **mantener un historial** de entregas realizadas.
+Este proyecto evolucionó desde una simulación en consola hasta una **aplicación de escritorio completa**, capaz de gestionar pedidos, coordinar repartidores mediante programación concurrente, y persistir toda la información transaccional en una base de datos relacional.
 
 ---
 
-## 🎯 Objetivos del proyecto
+## 🎯 Objetivos y Evolución del Proyecto
 
-- Diseñar una **clase abstracta** que represente el concepto general de pedido.
-- Reutilizar atributos y comportamientos comunes mediante **herencia**.
-- Aplicar **polimorfismo** mediante sobrescritura y sobrecarga de métodos.
-- Implementar **interfaces** para desacoplar responsabilidades del sistema.
-- Diseñar una estructura **modular, clara y alineada a buenas prácticas**.
-- Simular el flujo completo del sistema desde una clase `Main`.
+El sistema fue desarrollado de manera iterativa, cumpliendo con los siguientes hitos:
+1. **Diseño Orientado a Objetos**: Creación de una arquitectura sólida usando clases abstractas, herencia, polimorfismo e interfaces para modelar las reglas de negocio.
+2. **Concurrencia**: Implementación de hilos (`Runnable`) para simular la ejecución de múltiples entregas en paralelo sin bloqueos.
+3. **Interfaz Gráfica (GUI)**: Desarrollo de ventanas interactivas y modulares utilizando Java Swing.
+4. **Persistencia de Datos (CRUD)**: Integración con base de datos MySQL mediante JDBC y el patrón DAO (Data Access Object) para garantizar el almacenamiento seguro de la información.
 
 ---
 
-## 🧩 Conceptos aplicados
+## 🧩 Conceptos y Tecnologías aplicadas
 
-- Programación Orientada a Objetos (POO)
-- Abstracción (`abstract`)
-- Herencia (`extends`)
-- Polimorfismo (sobrescritura y sobrecarga)
-- Interfaces (`interface`)
-- Encapsulamiento
-- Validaciones de atributos
-- Uso de `enum`
-- Colecciones (`ArrayList`)
-- Documentación **JavaDoc**
+- **Java SE 17+**
+- **POO**: Abstracción (`abstract`), Herencia (`extends`), Polimorfismo, Interfaces.
+- **Concurrencia**: `Thread`, `Runnable`, `ExecutorService`.
+- **Patrones de Diseño**: Data Access Object (DAO), Modelo-Vista-Controlador (MVC adaptado).
+- **Frontend de Escritorio**: Java Swing (`JFrame`, `JPanel`, `JTable`, `JComboBox`).
+- **Base de Datos**: MySQL 8.0+, JDBC (Java Database Connectivity), sentencias preparadas (`PreparedStatement`).
+- **Documentación**: JavaDoc y control de versiones con GitHub.
 
 ---
 
 ## 🗂️ Estructura del proyecto
+
+El código está organizado en capas lógicas para asegurar alta cohesión y bajo acoplamiento:
 
 ```
 src
@@ -54,143 +51,108 @@ src
     └── java
         └── com
             ├── app
-            │   └── Main.java
-            ├── model
-            │   ├── Pedido.java
-            │   ├── PedidoComida.java
-            │   ├── PedidoEncomienda.java
-            │   └── PedidoExpress.java
+            │   └── Main.java (Punto de entrada y arranque de UI)
+            ├── controlador
+            │   └── ControladorDeEnvios.java
+            ├── dao
+            │   ├── ConexionDB.java (Gestión de conexión JDBC)
+            │   ├── EntregaDAO.java
+            │   ├── PedidoDAO.java
+            │   └── RepartidorDAO.java
             ├── interfaces
-            │   ├── Despachable.java
             │   ├── Cancelable.java
+            │   ├── Despachable.java
             │   └── Rastreable.java
-            └── controlador
-                └── ControladorDeEnvios.java
+            ├── model
+            │   ├── Entrega.java (Entidad transaccional)
+            │   ├── EstadoPedido.java (Enum: PENDIENTE, EN_REPARTO, ENTREGADO)
+            │   ├── Pedido.java (Clase Abstracta)
+            │   ├── PedidoComida.java
+            │   ├── PedidoCompraXpress.java
+            │   ├── PedidoEncomienda.java
+            │   └── Repartidor.java (Implementa Runnable)
+            └── ui
+                ├── VentanaEntregas.java
+                ├── VentanaPedidos.java
+                ├── VentanaPrincipal.java
+                └── VentanaRepartidores.java
+                
 ```
 
 ---
+## 🏗️ Arquitectura de Base de Datos
 
-## 🏗️ Diseño general del sistema
+El sistema se apoya en una base de datos MySQL (`speedfast_db`) conformada por:
 
-### 🔹 Clase abstracta `Pedido`
-Representa el concepto base de pedido y define:
-
-**Atributos comunes**
-- `idPedido`
-- `direccionEntrega`
-- `distanciaKm`
-- `tipoPedido`
-- `repartidor`
-- `cancelado`
-
-**Comportamientos**
-- `mostrarResumen()` → método implementado.
-- `calcularTiempoEntrega()` → método abstracto.
-- `asignarRepartidor()` → método abstracto (asignación automática).
-- `asignarRepartidor(String nombre)` → método sobrecargado (asignación manual).
-
-Implementa las interfaces:
-- `Despachable`
-- `Cancelable`
+* **`repartidores`**: Almacena el ID y nombre del personal.
+* **`pedidos`**: Guarda las direcciones, tipo de pedido y su estado actual.
+* **`entregas`**: Tabla transaccional que relaciona `pedidos` y `repartidores`, registrando la fecha y hora exacta del despacho.
 
 ---
 
-### 🔹 Subclases concretas
-- `PedidoComida`
-- `PedidoEncomienda`
-- `PedidoExpress`
+## ▶️ Ejecución y Configuración del proyecto
 
-Cada subclase:
-- Sobrescribe `calcularTiempoEntrega()` con reglas propias.
-- Sobrescribe `asignarRepartidor()` según el tipo de pedido.
+Para ejecutar este proyecto en un entorno local, sigue estos pasos:
 
----
-
-### 🔹 Interfaces
-- **Despachable**: define la operación de despacho.
-- **Cancelable**: define la cancelación de un pedido.
-- **Rastreable**: define la visualización del historial.
-
-Estas interfaces permiten desacoplar responsabilidades y mejorar la mantenibilidad del sistema.
+1. **Base de Datos**:
+    * Abre MySQL Server (Workbench, XAMPP, etc.).
+    * Ejecuta el script SQL incluido en el proyecto para crear la base de datos `speedfast_db` y sus tablas.
+2. **Configurar Credenciales**:
+    * Abre la clase `com.dao.ConexionDB.java`.
+    * Modifica los parámetros `USER` y `PASSWORD` según la configuración de tu motor de base de datos local.
+3. **Dependencias**:
+    * Asegúrate de tener agregado el `mysql-connector-j-8.0.x.jar` en las librerías de tu IDE (IntelliJ IDEA / Eclipse).
+4. **Ejecución**:
+    * Corre la clase `com.app.Main` para iniciar el menú principal gráfico.
 
 ---
 
-### 🔹 ControladorDeEnvios
-Clase responsable de:
-- Registrar pedidos en un historial (`ArrayList<Pedido>`).
-- Mostrar el historial por consola.
-- Implementar la interfaz `Rastreable`.
-
----
-
-### 🔹 Clase `Main`
-Clase de ejecución que simula el funcionamiento completo del sistema:
-
-- Creación de distintos tipos de pedidos.
-- Asignación automática y manual de repartidores.
-- Cálculo del tiempo estimado.
-- Despacho y cancelación de pedidos.
-- Visualización del historial de entregas.
-
----
-
-## ▶️ Ejecución del proyecto
-
-1. Abrir el proyecto en **IntelliJ IDEA**.
-2. Verificar que el SDK de Java esté correctamente configurado.
-3. Ejecutar la clase:
+## 📊 Diagrama UML 
 
 ```
-com.app.Main
-```
-
----
-
-## 🖥️ Ejemplo de salida por consola
-
-```
-[PedidoEncomienda]
-Pedido #102
-Dirección: Av. Santa Rosa 567
-Distancia: 7 km
-Repartidor asignado: Daniela Tapia
-Tiempo estimado: 30 minutos
-Pedido despachado correctamente.
-
-Cancelando Pedido Express #103...
-→ Pedido cancelado exitosamente.
-
-Historial:
-- PedidoComida #101 – entregado por Luis Díaz
-- PedidoEncomienda #102 – entregado por Daniela Tapia
-```
-
----
-
-## 📊 Diagrama UML (simplificado)
-
-```
-                 ┌───────────────────────────────┐
+                 ┌─────────────────────────────────┐
+                 │          <<enum>>               │
+                 │        EstadoPedido             │
+                 ├─────────────────────────────────┤
+                 │ + PENDIENTE                     │
+                 │ + EN_REPARTO                    │
+                 │ + ENTREGADO                     │
+                 └───────────────┬─────────────────┘
+                                 │ (usa)
+                 ┌───────────────▼───────────────┐
                  │       Pedido (abstract)       │
                  ├───────────────────────────────┤
-                 │ - idPedido                    │
-                 │ - direccionEntrega            │
-                 │ - distanciaKm                 │
-                 │ - tipoPedido                  │
-                 │ - repartidor                  │
-                 │ - cancelado                   │
+                 │ - idPedido : int              │
+                 │ - direccionEntrega : String   │
+                 │ - distanciaKm : double        │
+                 │ - tipoPedido : TipoPedido     │
+                 │ - estado : EstadoPedido       │
+                 │ - repartidor : String         │
+                 │ - cancelado : boolean         │
                  ├───────────────────────────────┤
-                 │ + mostrarResumen()             │
-                 │ + asignarRepartidor()          │
-                 │ + asignarRepartidor(String)    │
-                 │ + calcularTiempoEntrega()      │
+                 │ + mostrarResumen()            │
+                 │ + asignarRepartidor()         │
+                 │ + asignarRepartidor(String)   │
+                 │ + calcularTiempoEntrega()     │
+                 │ + despachar()                 │
+                 │ + cancelar()                  │
                  └───────────────▲───────────────┘
                                  │
         ┌────────────────────────┼────────────────────────┐
         │                        │                        │
-┌────────────────────┐ ┌──────────────────────┐ ┌──────────────────────┐
-│   PedidoComida     │ │  PedidoEncomienda    │ │   PedidoExpress      │
+┌───────┴────────────┐ ┌─────────┴────────────┐ ┌─────────┴────────────┐
+│   PedidoComida     │ │  PedidoEncomienda    │ │  PedidoCompraXpress  │
 └────────────────────┘ └──────────────────────┘ └──────────────────────┘
+
+┌───────────────────────────────┐        ┌───────────────────────────────┐
+│     Repartidor (Runnable)     │        │       Entrega (Entidad)       │
+├───────────────────────────────┤        ├───────────────────────────────┤
+│ - id : int                    │        │ - id : int                    │
+│ - nombre : String             │        │ - idPedido : int              │
+│ - pedidosAsignados : List     │  ───►  │ - idRepartidor : int          │
+├───────────────────────────────┤ (une)  │ - fecha : Date                │
+│ + run()                       │        │ - hora : Time                 │
+└───────────────────────────────┘        └───────────────────────────────┘
 ```
 
 ---
